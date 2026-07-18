@@ -1,39 +1,70 @@
-/*
- * CluckSquad Quest Sync — RuneLite external plugin
- * Build with:  ./gradlew shadowJar   (produces build/libs/clucksquad-quest-sync-*-all.jar)
- */
 plugins {
 	id 'java'
-	id 'com.github.johnrengelman.shadow' version '7.1.2'
 }
 
 repositories {
+	mavenLocal()
+	maven {
+		url = 'https://repo.runelite.net'
+		content {
+			includeGroupByRegex("net\\.runelite.*")
+		}
+	}
 	mavenCentral()
-	maven { url = 'https://repo.runelite.net' }
 }
 
 def runeLiteVersion = 'latest.release'
+def pluginMainClass = 'com.clucksquad.questsync.CluckSquadSyncPlugin'
 
 dependencies {
-	compileOnly group: 'net.runelite', name: 'client', version: runeLiteVersion
+	compileOnly group: 'net.runelite', name:'client', version: runeLiteVersion
 
-	compileOnly 'org.projectlombok:lombok:1.18.28'
-	annotationProcessor 'org.projectlombok:lombok:1.18.28'
+	compileOnly 'org.projectlombok:lombok:1.18.30'
+	annotationProcessor 'org.projectlombok:lombok:1.18.30'
 
-	// These are provided by the RuneLite client at runtime; compileOnly keeps the jar slim.
-	compileOnly 'com.google.code.gson:gson:2.10.1'
-	compileOnly 'com.google.inject:guice:5.1.0:no_aop'
-	compileOnly 'com.squareup.okhttp3:okhttp:4.12.0'
-	compileOnly 'javax.inject:javax.inject:1'
-
-	testImplementation group: 'net.runelite', name: 'client', version: runeLiteVersion
-	testImplementation 'junit:junit:4.13.2'
+	testImplementation 'junit:junit:4.12'
+	testImplementation group: 'net.runelite', name:'client', version: runeLiteVersion
+	testImplementation group: 'net.runelite', name:'jshell', version: runeLiteVersion
 }
 
 group = 'com.clucksquad'
 version = '1.0.0'
 
-java {
-	sourceCompatibility = JavaVersion.VERSION_11
-	targetCompatibility = JavaVersion.VERSION_11
+tasks.withType(JavaCompile).configureEach {
+	options.encoding = 'UTF-8'
+	options.release.set(11)
+}
+
+tasks.register('run', JavaExec) {
+	classpath = sourceSets.test.runtimeClasspath
+	mainClass = pluginMainClass
+
+	jvmArgs "-ea"
+	args "--developer-mode", "--debug"
+}
+
+tasks.register('shadowJar', Jar) {
+	dependsOn configurations.testRuntimeClasspath
+	manifest {
+		attributes('Main-Class': pluginMainClass, 'Multi-Release': true)
+	}
+
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+	from sourceSets.main.output
+	from sourceSets.test.output
+	from {
+		configurations.testRuntimeClasspath.collect { file ->
+			file.isDirectory() ? file : zipTree(file)
+		}
+	}
+
+	exclude 'META-INF/INDEX.LIST'
+	exclude 'META-INF/*.SF'
+	exclude 'META-INF/*.DSA'
+	exclude 'META-INF/*.RSA'
+	exclude '**/module-info.class'
+
+	group = BasePlugin.BUILD_GROUP
+	archiveClassifier.set('shadow')
+	archiveFileName.set("${rootProject.name}-${project.version}-all.jar")
 }

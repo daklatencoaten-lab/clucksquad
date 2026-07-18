@@ -1,0 +1,39 @@
+/*
+ * CluckSquad Quest Sync — RuneLite external plugin
+ * Build with:  ./gradlew shadowJar   (produces build/libs/clucksquad-quest-sync-*-all.jar)
+ */
+plugins {
+	id 'java'
+	id 'com.github.johnrengelman.shadow' version '7.1.2'
+}
+
+repositories {
+	mavenCentral()
+	maven { url = 'https://repo.runelite.net' }
+}
+
+def runeLiteVersion = 'latest.release'
+
+dependencies {
+	compileOnly group: 'net.runelite', name: 'client', version: runeLiteVersion
+
+	compileOnly 'org.projectlombok:lombok:1.18.28'
+	annotationProcessor 'org.projectlombok:lombok:1.18.28'
+
+	// These are provided by the RuneLite client at runtime; compileOnly keeps the jar slim.
+	compileOnly 'com.google.code.gson:gson:2.10.1'
+	compileOnly 'com.google.inject:guice:5.1.0:no_aop'
+	compileOnly 'com.squareup.okhttp3:okhttp:4.12.0'
+	compileOnly 'javax.inject:javax.inject:1'
+
+	testImplementation group: 'net.runelite', name: 'client', version: runeLiteVersion
+	testImplementation 'junit:junit:4.13.2'
+}
+
+group = 'com.clucksquad'
+version = '1.0.0'
+
+java {
+	sourceCompatibility = JavaVersion.VERSION_11
+	targetCompatibility = JavaVersion.VERSION_11
+}

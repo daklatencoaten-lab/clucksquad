@@ -1,9 +1,9 @@
 package com.clucksquad.questsync;
-
+ 
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
-
+ 
 @ConfigGroup("clucksquadsync")
 public interface CluckSquadSyncConfig extends Config
 {
@@ -17,18 +17,22 @@ public interface CluckSquadSyncConfig extends Config
 	{
 		return "https://clucksquad.com/wp-admin/admin-ajax.php";
 	}
-
+ 
+	// Clan sync key baked in so members don't have to paste anything.
+	// This is the real CluckSquad clan key (read from the site). Members can still override it below.
+	String DEFAULT_SYNC_KEY = "eO5wqmtizeeTNv6jXgWiMtFQBH34";
+ 
 	@ConfigItem(
 		keyName = "syncKey",
 		name = "Sync key",
-		description = "Paste the CluckSquad sync key. Get it from the Quest Calculator page (see the plugin README).",
+		description = "Pre-filled with the CluckSquad clan key. Only change this if an admin tells you to.",
 		position = 2
 	)
 	default String syncKey()
 	{
-		return "";
+		return DEFAULT_SYNC_KEY;
 	}
-
+ 
 	@ConfigItem(
 		keyName = "syncOnLogin",
 		name = "Sync after login",
@@ -39,7 +43,7 @@ public interface CluckSquadSyncConfig extends Config
 	{
 		return true;
 	}
-
+ 
 	@ConfigItem(
 		keyName = "periodicMinutes",
 		name = "Re-sync every (minutes)",
